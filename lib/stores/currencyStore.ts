@@ -130,6 +130,101 @@
 
 // 6 шаг
 
+// import { create } from 'zustand';
+// import { persist } from 'zustand/middleware';
+// import { exchangeCurrency, latestRates } from '@/lib/service/exchangeAPI';
+
+// interface ExchangeInfo {
+//   to: string;
+//   from: string;
+//   amount: number;
+//   rate: number;
+//   result: number;
+// }
+
+// // Описываем структуру объекта для списка курсов
+// interface RateItem {
+//   key: string;
+//   value: string;
+// }
+
+// type CurrencyState = {
+//   baseCurrency: string;
+//   hasHydrated: boolean;
+//   exchangeInfo: ExchangeInfo | null;
+//   isLoading: boolean;
+//   isError: string | null;
+//   rates: RateItem[]; // Добавили поле по ТЗ
+//   setBaseCurrency: (currency: string) => void;
+//   setHasHydrated: (state: boolean) => void;
+//   exchangeCurrencyAction: (credentials: {
+//     to: string;
+//     from: string;
+//     amount: number;
+//   }) => Promise<void>;
+//   getLatestRatesAction: () => Promise<void>; // Добавили новый экшен
+// };
+
+// export const useCurrencyStore = create<CurrencyState>()(
+//   persist(
+//     (set, get) => ({
+//       baseCurrency: '',
+//       hasHydrated: false,
+//       exchangeInfo: null,
+//       isLoading: false,
+//       isError: null,
+//       rates: [], // Начальное значение по умолчанию
+
+//       setBaseCurrency: (currency) => set({ baseCurrency: currency }),
+//       setHasHydrated: (state) => set({ hasHydrated: state }),
+
+//       exchangeCurrencyAction: async (credentials) => {
+//         set({ isLoading: true, isError: null, exchangeInfo: null });
+//         try {
+//           const data = await exchangeCurrency(credentials);
+//           set({ exchangeInfo: data, isLoading: false });
+//         } catch (error) {
+//           const errorMessage = error instanceof Error ? error.message : 'Something went wrong';
+//           set({ isError: errorMessage, isLoading: false, exchangeInfo: null });
+//         }
+//       },
+
+//       // Новый асинхронный экшен для получения курсов валют
+//       getLatestRatesAction: async () => {
+//         const { baseCurrency } = get();
+//         if (!baseCurrency) return; // Если базовая валюта еще не определена — выходим
+
+//         set({ isLoading: true, isError: null, rates: [] });
+//         try {
+//           const rawRates = await latestRates(baseCurrency);
+
+//           // Применяем фильтрацию и трансформацию строго по формуле из задания
+//           const filteredRates = rawRates
+//             .filter(([key]) => key !== baseCurrency)
+//             .map(([key, value]) => ({
+//               key,
+//               value: (1 / (value as number)).toFixed(2),
+//             }));
+
+//           set({ rates: filteredRates, isLoading: false });
+//         } catch (error) {
+//           const errorMessage = error instanceof Error ? error.message : 'Something went wrong';
+//           set({ isError: errorMessage, isLoading: false, rates: [] });
+//         }
+//       },
+//     }),
+//     {
+//       name: 'bank-currency-storage',
+//       partialize: (state) => ({ baseCurrency: state.baseCurrency }),
+//       onRehydrateStorage: () => (state) => {
+//         state?.setHasHydrated(true);
+//       },
+//     }
+//   )
+// );
+
+// 8 шаг
+
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { exchangeCurrency, latestRates } from '@/lib/service/exchangeAPI';
@@ -142,27 +237,23 @@ interface ExchangeInfo {
   result: number;
 }
 
-// Описываем структуру объекта для списка курсов
-interface RateItem {
-  key: string;
-  value: string;
-}
-
 type CurrencyState = {
   baseCurrency: string;
   hasHydrated: boolean;
   exchangeInfo: ExchangeInfo | null;
   isLoading: boolean;
   isError: string | null;
-  rates: RateItem[]; // Добавили поле по ТЗ
+  rates: [string, unknown][]; // Храним пары [валюта, значение] для формулы из задания
+  filter: string; // Новое поле для фильтра
   setBaseCurrency: (currency: string) => void;
   setHasHydrated: (state: boolean) => void;
+  setFilter: (text: string) => void; // Новый экшен изменения фильтра
   exchangeCurrencyAction: (credentials: {
     to: string;
     from: string;
     amount: number;
   }) => Promise<void>;
-  getLatestRatesAction: () => Promise<void>; // Добавили новый экшен
+  getLatestRatesAction: () => Promise<void>;
 };
 
 export const useCurrencyStore = create<CurrencyState>()(
@@ -173,10 +264,12 @@ export const useCurrencyStore = create<CurrencyState>()(
       exchangeInfo: null,
       isLoading: false,
       isError: null,
-      rates: [], // Начальное значение по умолчанию
+      rates: [],
+      filter: '', // По умолчанию фильтр пустой
 
       setBaseCurrency: (currency) => set({ baseCurrency: currency }),
       setHasHydrated: (state) => set({ hasHydrated: state }),
+      setFilter: (text) => set({ filter: text }), // Обновляем текст фильтра
 
       exchangeCurrencyAction: async (credentials) => {
         set({ isLoading: true, isError: null, exchangeInfo: null });
@@ -189,24 +282,14 @@ export const useCurrencyStore = create<CurrencyState>()(
         }
       },
 
-      // Новый асинхронный экшен для получения курсов валют
       getLatestRatesAction: async () => {
         const { baseCurrency } = get();
-        if (!baseCurrency) return; // Если базовая валюта еще не определена — выходим
+        if (!baseCurrency) return;
 
         set({ isLoading: true, isError: null, rates: [] });
         try {
           const rawRates = await latestRates(baseCurrency);
-
-          // Применяем фильтрацию и трансформацию строго по формуле из задания
-          const filteredRates = rawRates
-            .filter(([key]) => key !== baseCurrency)
-            .map(([key, value]) => ({
-              key,
-              value: (1 / (value as number)).toFixed(2),
-            }));
-
-          set({ rates: filteredRates, isLoading: false });
+          set({ rates: rawRates, isLoading: false }); // Сохраняем массив для фильтрации на странице
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Something went wrong';
           set({ isError: errorMessage, isLoading: false, rates: [] });
@@ -215,6 +298,7 @@ export const useCurrencyStore = create<CurrencyState>()(
     }),
     {
       name: 'bank-currency-storage',
+      // В localStorage сохраняем СТРОГО только baseCurrency. Фильтр туда не идет!
       partialize: (state) => ({ baseCurrency: state.baseCurrency }),
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true);
