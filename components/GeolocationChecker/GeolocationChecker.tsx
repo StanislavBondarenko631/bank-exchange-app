@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect } from 'react';
-
 import { getUserInfo } from '@/lib/service/opencagedataApi';
 
 export default function GeolocationChecker() {
@@ -12,14 +11,28 @@ export default function GeolocationChecker() {
       maximumAge: 0,
     };
 
-    const success = async ({ coords }: GeolocationPosition) => {
-      const data = await getUserInfo(coords);
-      return data.results[0].annotations.currency.iso_code;
+    const success = async (position: GeolocationPosition) => {
+      const { latitude, longitude } = position.coords;
+      try {
+        // Передаем объект с широтой и долготой, как требует функция в lib
+        const data = await getUserInfo({ latitude, longitude });
+
+        // Достаем валюту по условию задания: results[0].annotations.currency.iso_code
+        const currencyCode = data.results[0].annotations.currency.iso_code;
+
+        console.log('Автоматически определенная валюта:', currencyCode);
+      } catch (error) {
+        console.error('Ошибка при получении валюты:', error);
+      }
     };
 
-    const error = () => {};
+    const error = (err: GeolocationPositionError) => {
+      console.warn(`Ошибка геолокации (${err.code}): ${err.message}`);
+    };
 
-    navigator.geolocation.getCurrentPosition(success, error, options);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(success, error, options);
+    }
   }, []);
 
   return null;
