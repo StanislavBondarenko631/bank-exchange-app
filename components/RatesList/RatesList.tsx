@@ -1,6 +1,15 @@
 import styles from './RatesList.module.css';
 
-export default function RatesList({ rates }) {
+interface RateItem {
+  key: string;
+  value: string | number;
+}
+
+interface RatesListProps {
+  rates: RateItem[];
+}
+
+export default function RatesList({ rates }: RatesListProps) {
   return (
     <ul className={styles.list}>
       {rates.map(({ key, value }) => (

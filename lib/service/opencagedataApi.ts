@@ -1,8 +1,15 @@
 import axios from 'axios';
 
-export const getUserInfo = async ({ latitude, longitude }) => {
-  const apiKey = process.env.NEXT_PUBLIC_OPENCAGE_API_KEY;
-  const urlPosition = `https://api.opencagedata.com/geocode/v1/json?q=${latitude}+${longitude}`;
+const apiKey = process.env.NEXT_PUBLIC_OPENCAGE_API_KEY;
+
+interface GetUserInfoArgs {
+  latitude: number;
+  longitude: number;
+}
+
+// Добавили latitude в аргументы функции
+export const getUserInfo = async ({ latitude, longitude }: GetUserInfoArgs) => {
+  const urlPosition = `https://opencagedata.com${latitude}+${longitude}`;
 
   const { data } = await axios.get(urlPosition, {
     params: {

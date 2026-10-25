@@ -1,12 +1,15 @@
-import 'modern-normalize';
-import './globals.css';
+import { ReactNode } from 'react';
 import Header from '@/components/Header/Header';
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+// Возвращаем глобальные стили приложения
+// @ts-expect-error global css module resolution
+import './globals.css';
+
+interface RootLayoutProps {
+  children: ReactNode;
+}
+
+export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en">
       <body>
