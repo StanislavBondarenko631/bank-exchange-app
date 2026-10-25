@@ -1,42 +1,10 @@
-// Файл до внесения изменений
-
-// import axios from 'axios';
-
-// const apiKey = process.env.NEXT_PUBLIC_API_LAYER_API_KEY;
-
-// const instance = axios.create({
-//   baseURL: 'https://api.apilayer.com/exchangerates_data/',
-//   headers: { apikey: apiKey ?? '' },
-// });
-
-// export const exchangeCurrency = async (credentials) => {
-//   const {
-//     data: { query, info, result },
-//   } = await instance.get('/convert', {
-//     params: credentials,
-//   });
-
-//   return { ...query, rate: info.rate, result };
-// };
-
-// export const latestRates = async (baseCurrency) => {
-//   const { data } = await instance.get(`/latest?symbols&base=${baseCurrency}`);
-
-//   return Object.entries(data.rates);
-// };
-
-// 5 шаг
-
 import axios from 'axios';
 
-const apiKey = process.env.NEXT_PUBLIC_API_LAYER_API_KEY;
-
+// Создаем инстанс, который смотрит на наши внутренние Route Handlers
 const instance = axios.create({
-  baseURL: 'https://apilayer.com',
-  headers: { apikey: apiKey ?? '' },
+  baseURL: '/api',
 });
 
-// Описываем интерфейс для передаваемых данных
 interface ExchangeCredentials {
   to: string;
   from: string;
@@ -44,17 +12,25 @@ interface ExchangeCredentials {
 }
 
 export const exchangeCurrency = async (credentials: ExchangeCredentials) => {
-  const {
-    data: { query, info, result },
-  } = await instance.get('/convert', {
+  // Запрос уйдет на /api/convert
+  const { data } = await instance.get('/convert', {
     params: credentials,
   });
 
-  return { ...query, rate: info.rate, result };
+  return {
+    to: data.query.to,
+    from: data.query.from,
+    amount: data.query.amount,
+    rate: data.info.rate,
+    result: data.result,
+  };
 };
 
 export const latestRates = async (baseCurrency: string) => {
-  const { data } = await instance.get(`/latest?symbols=&base=${baseCurrency}`);
+  // Запрос уйдет на /api/latest
+  const { data } = await instance.get('/latest', {
+    params: { base: baseCurrency },
+  });
 
   return Object.entries(data.rates);
 };
