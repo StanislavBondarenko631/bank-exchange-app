@@ -1,6 +1,5 @@
 import axios from 'axios';
 
-// Создаем инстанс, который смотрит на наши внутренние Route Handlers
 const instance = axios.create({
   baseURL: '/api',
 });
@@ -12,7 +11,6 @@ interface ExchangeCredentials {
 }
 
 export const exchangeCurrency = async (credentials: ExchangeCredentials) => {
-  // Запрос уйдет на /api/convert
   const { data } = await instance.get('/convert', {
     params: credentials,
   });
@@ -27,7 +25,6 @@ export const exchangeCurrency = async (credentials: ExchangeCredentials) => {
 };
 
 export const latestRates = async (baseCurrency: string) => {
-  // Запрос уйдет на /api/latest
   const { data } = await instance.get('/latest', {
     params: { base: baseCurrency },
   });

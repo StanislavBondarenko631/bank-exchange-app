@@ -7,7 +7,6 @@ interface GetUserInfoArgs {
   longitude: number;
 }
 
-// Добавили latitude в аргументы функции
 export const getUserInfo = async ({ latitude, longitude }: GetUserInfoArgs) => {
   const urlPosition = `https://opencagedata.com${latitude}+${longitude}`;
 

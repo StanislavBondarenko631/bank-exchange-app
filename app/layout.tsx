@@ -1,8 +1,6 @@
 import { ReactNode } from 'react';
 import Header from '@/components/Header/Header';
 
-// Возвращаем глобальные стили приложения
-
 import './globals.css';
 
 interface RootLayoutProps {

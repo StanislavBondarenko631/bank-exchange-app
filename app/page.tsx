@@ -1,36 +1,3 @@
-// до внесения изменений
-
-// 'use client';
-
-// import Section from '@/components/Section/Section';
-// import Container from '@/components/Container/Container';
-// import Heading from '@/components/Heading/Heading';
-
-// import css from './page.module.css';
-
-// export default function Home() {
-//   const isError = false;
-
-//   return (
-//     <main className={css.main}>
-//       <Section>
-//         <Container>
-//           <Heading info title="What currencies do you want to exchange?🙂" />
-
-//           {isError && (
-//             <Heading
-//               error
-//               title="Something went wrong...😐 Check the data validity and try again!"
-//             />
-//           )}
-//         </Container>
-//       </Section>
-//     </main>
-//   );
-// }
-
-// 5 шаг
-
 'use client';
 
 import { useCurrencyStore } from '@/lib/stores/currencyStore';
@@ -49,16 +16,12 @@ export default function Home() {
   return (
     <Section>
       <Container>
-        {/* Передаем все обязательные пропсы компонента Heading */}
         <Heading title="Currency Converter" info={true} error={false} top={false} bottom={false} />
 
-        {/* Наша форма ввода */}
         <ExchangeForm />
 
-        {/* Во время запроса показываем лоадер */}
         {isLoading && <Loader />}
 
-        {/* После успешного ответа показываем результат конвертации */}
         {exchangeInfo && (
           <ExchangeInfo
             amount={exchangeInfo.amount}
@@ -69,7 +32,6 @@ export default function Home() {
           />
         )}
 
-        {/* Если возникла ошибка — информируем пользователя */}
         {isError && (
           <Heading
             title="Something went wrong...Check the data validity and try again!"
